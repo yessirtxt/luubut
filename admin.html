@@ -3,18 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trang Quản Lý Lưu Bút</title>
+    <title>Trang Quản Lý Lưu Bút - Private</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
         body { background: #f0f2f5; display: flex; height: 100vh; overflow: hidden; }
         
-        /* Danh sách người gửi bên trái */
+        /* Màn hình khóa đăng nhập */
+        #login-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #2c3e50; display: flex; justify-content: center;
+            align-items: center; z-index: 999; flex-direction: column; gap: 15px;
+        }
+        #login-box {
+            background: white; padding: 30px; border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); text-align: center;
+            display: flex; flex-direction: column; gap: 15px; width: 320px;
+        }
+        #login-box h2 { color: #333; font-size: 1.3rem; }
+        #login-box input { padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 16px; text-align: center; }
+        #login-box button { background: #6c5ce7; color: white; border: none; padding: 10px; font-size: 16px; font-weight: bold; border-radius: 4px; cursor: pointer; }
+        #login-box button:hover { background: #5b4cc4; }
+        #error-msg { color: #ff7675; font-size: 0.9rem; display: none; }
+
+        /* Giao diện chính sau khi đăng nhập (Mặc định ẩn đi) */
+        #main-content { display: none; width: 100%; height: 100%; }
+        
+        /* Cấu trúc giao diện bên trong */
         #sidebar {
             width: 300px; background: #ffffff; box-shadow: 2px 0 10px rgba(0,0,0,0.1);
             padding: 20px; display: flex; flex-direction: column; gap: 15px; z-index: 10;
         }
         #sidebar h3 { color: #333; font-size: 1.1rem; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        
         #user-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; list-style: none; }
         .user-item { padding: 12px; background: #f8f9fa; border-radius: 6px; cursor: pointer; transition: 0.2s; border: 1px solid #eee; }
         .user-item:hover { background: #e8f0fe; border-color: #1a73e8; }
@@ -22,7 +41,6 @@
         .user-time { font-size: 0.75rem; color: #888; margin-top: 4px; }
         .user-item.active .user-time { color: #e8f0fe; }
 
-        /* Khu vực hiển thị Quyển Sổ phục dựng */
         #notebook-container { flex: 1; padding: 40px; overflow: auto; display: flex; justify-content: center; align-items: center; flex-direction: column; gap: 20px; }
         #notebook-title { font-size: 1.5rem; color: #333; font-weight: bold; }
         #notebook {
@@ -30,106 +48,108 @@
             background-image: linear-gradient(#e8e6dd 1px, transparent 1px); background-size: 100% 30px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.15); border-radius: 4px; position: relative; border-left: 15px solid #6c5ce7;
         }
-
-        /* Phần tử hiển thị trên sổ (khóa không cho sửa/xóa/kéo thả nữa) */
         .preview-item { position: absolute; transform: translate(-50%, -50%); user-select: none; }
         .preview-text { font-size: 16px; color: #2c3e50; font-weight: 500; padding: 5px; word-wrap: break-word; white-space: nowrap; }
         .preview-sticker { font-size: 3rem; }
-        
-        #loading { font-size: 1.2rem; color: #666; }
     </style>
 </head>
 <body>
 
-    <div id="sidebar">
-        <h3>DANH SÁCH LƯU BÚT</h3>
-        <div id="loading">Đang tải thư...</div>
-        <ul id="user-list"></ul>
+    <div id="login-screen">
+        <div id="login-box">
+            <h2>HÒM THƯ BÍ MẬT 🔐</h2>
+            <input type="password" id="password-input" placeholder="Nhập mật khẩu của bro...">
+            <div id="error-msg">Sai mật khẩu rồi bro ơi! ❌</div>
+            <button id="btn-login">MỞ KHÓA</button>
+        </div>
     </div>
 
-    <div id="notebook-container">
-        <div id="notebook-title">Chọn một người bên trái để xem lưu bút</div>
-        <div id="notebook">
-            </div>
+    <div id="main-content">
+        <div id="sidebar">
+            <h3>DANH SÁCH LƯU BÚT</h3>
+            <ul id="user-list"></ul>
+        </div>
+        <div id="notebook-container">
+            <div id="notebook-title">Chọn một người bên trái để xem lưu bút</div>
+            <div id="notebook"></div>
+        </div>
     </div>
 
     <script>
-        const userListElement = document.getElementById('user-list');
-        const notebookElement = document.getElementById('notebook');
-        const notebookTitle = document.getElementById('notebook-title');
-        const loadingElement = document.getElementById('loading');
+        // ĐẶT MẬT KHẨU CỦA BRO TẠI ĐÂY (Thay đổi tùy ý nhé)
+        const MY_PASSWORD = "Adu2026"; 
         
         // ĐƯỜNG LINK GOOGLE APPS SCRIPT CỦA BRO
         const scriptUrl = 'https://script.google.com/macros/s/AKfycbwA1xSF50puLXA5Vj5N31Lt6Ww8h_X7n8v45hFcQNZl-QPABSO5dGV2Hz9l2kfNGGm1xA/exec';
+
+        const loginScreen = document.getElementById('login-screen');
+        const mainContent = document.getElementById('main-content');
+        const passwordInput = document.getElementById('password-input');
+        const btnLogin = document.getElementById('btn-login');
+        const errorMsg = document.getElementById('error-msg');
         
-        let allMessages = [];
+        const userListElement = document.getElementById('user-list');
+        const notebookElement = document.getElementById('notebook');
+        const notebookTitle = document.getElementById('notebook-title');
 
-        // 1. TẢI TẤT CẢ LƯU BÚT TỪ GOOGLE SHEET VỀ
-        fetch(scriptUrl)
-            .then(res => res.json())
-            .then(data => {
-                allMessages = data;
-                loadingElement.style.display = 'none';
-                
-                if(allMessages.length === 0) {
-                    notebookTitle.innerText = "Chưa có ai gửi lưu bút cả bro ơi!";
-                    return;
-                }
+        // XỬ LÝ ĐĂNG NHẬP
+        function checkPassword() {
+            if (passwordInput.value === MY_PASSWORD) {
+                loginScreen.style.display = 'none'; // Ẩn màn hình khóa
+                mainContent.style.display = 'flex'; // Hiện trang admin
+                loadData(); // Gọi hàm tải dữ liệu từ Google Sheet
+            } else {
+                errorMsg.style.display = 'block'; // Hiện báo lỗi
+                passwordInput.value = "";
+                passwordInput.focus();
+            }
+        }
 
-                // Render danh sách tên ra thanh bên trái
-                allMessages.reverse().forEach((msg, index) => { // reverse để người mới gửi hiện lên đầu
-                    const li = document.createElement('li');
-                    li.className = 'user-item';
-                    
-                    // Định dạng thời gian nhìn cho gọn
-                    const date = new Date(msg.timestamp);
-                    const timeStr = `${date.getHours()}:${date.getMinutes()} - ${date.getDate()}/${date.getMonth()+1}`;
+        btnLogin.onclick = checkPassword;
+        passwordInput.onkeypress = (e) => { if(e.key === 'Enter') checkPassword(); };
 
-                    li.innerHTML = `<div>${msg.name}</div><div class="user-time">${timeStr}</div>`;
-                    
-                    // Khi click vào tên ai thì vẽ sổ của người đó
-                    li.onclick = () => {
-                        document.querySelectorAll('.user-item').forEach(item => item.classList.remove('active'));
-                        li.classList.add('active');
-                        renderNotebook(msg);
-                    };
-                    userListElement.appendChild(li);
-                });
-            })
-            .catch(err => {
-                loadingElement.innerText = "Lỗi tải dữ liệu rồi bro ơi!";
-                console.error(err);
-            });
+        // HÀM TẢI DỮ LIỆU (Chỉ chạy sau khi gõ đúng pass)
+        function loadData() {
+            userListElement.innerHTML = "<li>Đang tải thư...</li>";
+            
+            fetch(scriptUrl)
+                .then(res => res.json())
+                .then(data => {
+                    userListElement.innerHTML = "";
+                    if(data.length === 0) { notebookTitle.innerText = "Chưa có ai gửi lưu bút cả bro ơi!"; return; }
 
-        // 2. HÀM PHỤC DỰNG QUYỂN SỔ TỪ CHUỖI TỌA ĐỘ JSON
+                    data.reverse().forEach((msg) => {
+                        const li = document.createElement('li');
+                        li.className = 'user-item';
+                        const date = new Date(msg.timestamp);
+                        const timeStr = `${date.getHours()}:${date.getMinutes()} - ${date.getDate()}/${date.getMonth()+1}`;
+
+                        li.innerHTML = `<div>${msg.name}</div><div class="user-time">${timeStr}</div>`;
+                        li.onclick = () => {
+                            document.querySelectorAll('.user-item').forEach(item => item.classList.remove('active'));
+                            li.classList.add('active');
+                            renderNotebook(msg);
+                        };
+                        userListElement.appendChild(li);
+                    });
+                })
+                .catch(err => { userListElement.innerHTML = "<li>Lỗi tải dữ liệu!</li>"; });
+        }
+
         function renderNotebook(msg) {
-            notebookElement.innerHTML = ""; // Xóa sạch sổ cũ trước khi vẽ sổ mới
+            notebookElement.innerHTML = "";
             notebookTitle.innerText = `Lưu bút của: ${msg.name}`;
-
             try {
-                // Giải mã chuỗi text loằng ngoằng thành mảng Object lại
                 const canvasData = JSON.parse(msg.canvasData);
-
-                // Duyệt qua từng món đồ và thả lại vào đúng vị trí X, Y ngày xưa
                 canvasData.forEach(item => {
                     const div = document.createElement('div');
                     div.className = 'preview-item';
-                    div.style.left = item.x;
-                    div.style.top = item.y;
-
-                    if (item.type === 'text') {
-                        div.className += ' preview-text';
-                        div.innerText = item.val;
-                    } else if (item.type === 'sticker') {
-                        div.className += ' preview-sticker';
-                        div.innerText = item.val;
-                    }
-
+                    div.style.left = item.x; div.style.top = item.y;
+                    if (item.type === 'text') { div.className += ' preview-text'; div.innerText = item.val; } 
+                    else if (item.type === 'sticker') { div.className += ' preview-sticker'; div.innerText = item.val; }
                     notebookElement.appendChild(div);
                 });
-            } catch (e) {
-                notebookElement.innerHTML = "<div style='padding:20px; color:red;'>Dữ liệu trang này bị lỗi không thể phục dựng!</div>";
-            }
+            } catch (e) { notebookElement.innerHTML = "<div style='padding:20px; color:red;'>Lỗi phục dựng!</div>"; }
         }
     </script>
 </body>
