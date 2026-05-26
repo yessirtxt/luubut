@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang Quản Lý Lưu Bút</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        body { background: #f0f2f5; display: flex; height: 100vh; overflow: hidden; }
+        
+        /* Danh sách người gửi bên trái */
+        #sidebar {
+            width: 300px; background: #ffffff; box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            padding: 20px; display: flex; flex-direction: column; gap: 15px; z-index: 10;
+        }
+        #sidebar h3 { color: #333; font-size: 1.1rem; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        
+        #user-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; list-style: none; }
+        .user-item { padding: 12px; background: #f8f9fa; border-radius: 6px; cursor: pointer; transition: 0.2s; border: 1px solid #eee; }
+        .user-item:hover { background: #e8f0fe; border-color: #1a73e8; }
+        .user-item.active { background: #1a73e8; color: white; font-weight: bold; }
+        .user-time { font-size: 0.75rem; color: #888; margin-top: 4px; }
+        .user-item.active .user-time { color: #e8f0fe; }
+
+        /* Khu vực hiển thị Quyển Sổ phục dựng */
+        #notebook-container { flex: 1; padding: 40px; overflow: auto; display: flex; justify-content: center; align-items: center; flex-direction: column; gap: 20px; }
+        #notebook-title { font-size: 1.5rem; color: #333; font-weight: bold; }
+        #notebook {
+            width: 850px; height: 550px; background-color: #fcfaf2;
+            background-image: linear-gradient(#e8e6dd 1px, transparent 1px); background-size: 100% 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15); border-radius: 4px; position: relative; border-left: 15px solid #6c5ce7;
+        }
+
+        /* Phần tử hiển thị trên sổ (khóa không cho sửa/xóa/kéo thả nữa) */
+        .preview-item { position: absolute; transform: translate(-50%, -50%); user-select: none; }
+        .preview-text { font-size: 16px; color: #2c3e50; font-weight: 500; padding: 5px; word-wrap: break-word; white-space: nowrap; }
+        .preview-sticker { font-size: 3rem; }
+        
+        #loading { font-size: 1.2rem; color: #666; }
+    </style>
+</head>
+<body>
+
+    <div id="sidebar">
+        <h3>DANH SÁCH LƯU BÚT</h3>
+        <div id="loading">Đang tải thư...</div>
+        <ul id="user-list"></ul>
+    </div>
+
+    <div id="notebook-container">
+        <div id="notebook-title">Chọn một người bên trái để xem lưu bút</div>
+        <div id="notebook">
+            </div>
+    </div>
+
+    <script>
+        const userListElement = document.getElementById('user-list');
+        const notebookElement = document.getElementById('notebook');
+        const notebookTitle = document.getElementById('notebook-title');
+        const loadingElement = document.getElementById('loading');
+        
+        // ĐƯỜNG LINK GOOGLE APPS SCRIPT CỦA BRO
+        const scriptUrl = 'https://script.google.com/macros/s/AKfycbwA1xSF50puLXA5Vj5N31Lt6Ww8h_X7n8v45hFcQNZl-QPABSO5dGV2Hz9l2kfNGGm1xA/exec';
+        
+        let allMessages = [];
+
+        // 1. TẢI TẤT CẢ LƯU BÚT TỪ GOOGLE SHEET VỀ
+        fetch(scriptUrl)
+            .then(res => res.json())
+            .then(data => {
+                allMessages = data;
+                loadingElement.style.display = 'none';
+                
+                if(allMessages.length === 0) {
+                    notebookTitle.innerText = "Chưa có ai gửi lưu bút cả bro ơi!";
+                    return;
+                }
+
+                // Render danh sách tên ra thanh bên trái
+                allMessages.reverse().forEach((msg, index) => { // reverse để người mới gửi hiện lên đầu
+                    const li = document.createElement('li');
+                    li.className = 'user-item';
+                    
+                    // Định dạng thời gian nhìn cho gọn
+                    const date = new Date(msg.timestamp);
+                    const timeStr = `${date.getHours()}:${date.getMinutes()} - ${date.getDate()}/${date.getMonth()+1}`;
+
+                    li.innerHTML = `<div>${msg.name}</div><div class="user-time">${timeStr}</div>`;
+                    
+                    // Khi click vào tên ai thì vẽ sổ của người đó
+                    li.onclick = () => {
+                        document.querySelectorAll('.user-item').forEach(item => item.classList.remove('active'));
+                        li.classList.add('active');
+                        renderNotebook(msg);
+                    };
+                    userListElement.appendChild(li);
+                });
+            })
+            .catch(err => {
+                loadingElement.innerText = "Lỗi tải dữ liệu rồi bro ơi!";
+                console.error(err);
+            });
+
+        // 2. HÀM PHỤC DỰNG QUYỂN SỔ TỪ CHUỖI TỌA ĐỘ JSON
+        function renderNotebook(msg) {
+            notebookElement.innerHTML = ""; // Xóa sạch sổ cũ trước khi vẽ sổ mới
+            notebookTitle.innerText = `Lưu bút của: ${msg.name}`;
+
+            try {
+                // Giải mã chuỗi text loằng ngoằng thành mảng Object lại
+                const canvasData = JSON.parse(msg.canvasData);
+
+                // Duyệt qua từng món đồ và thả lại vào đúng vị trí X, Y ngày xưa
+                canvasData.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'preview-item';
+                    div.style.left = item.x;
+                    div.style.top = item.y;
+
+                    if (item.type === 'text') {
+                        div.className += ' preview-text';
+                        div.innerText = item.val;
+                    } else if (item.type === 'sticker') {
+                        div.className += ' preview-sticker';
+                        div.innerText = item.val;
+                    }
+
+                    notebookElement.appendChild(div);
+                });
+            } catch (e) {
+                notebookElement.innerHTML = "<div style='padding:20px; color:red;'>Dữ liệu trang này bị lỗi không thể phục dựng!</div>";
+            }
+        }
+    </script>
+</body>
+</html>
