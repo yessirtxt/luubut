@@ -3,43 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gửi Lưu Bút Cho Bro</title>
+    <title>Lưu Bút Góc Bàn Chill</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        /* CSS Reset cơ bản */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background: #f0f2f5; display: flex; height: 100vh; overflow: hidden; }
-        
+
+        /* THANH CÔNG CỤ (SIDEBAR) - Giữ nguyên như cũ */
         #sidebar {
-            width: 280px; background: #ffffff; box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-            padding: 20px; display: flex; flex-direction: column; gap: 15px; z-index: 10;
+            width: 250px; background: #ffffff; box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            padding: 20px; display: flex; flex-direction: column; gap: 20px; z-index: 10;
         }
-        #sidebar h3 { color: #333; font-size: 1rem; border-bottom: 2px solid #eee; padding-bottom: 5px; }
-        
-        /* Form nhập tên */
-        .form-group { display: flex; flex-direction: column; gap: 5px; }
-        .form-group input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
-        
+        #sidebar h3 { color: #333; font-size: 1.1rem; border-bottom: 2px solid #eee; padding-bottom: 10px; }
         .sticker-box { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        .sticker-item { font-size: 2rem; text-align: center; cursor: grab; padding: 5px; background: #f8f9fa; border-radius: 8px; user-select: none; }
+        .sticker-item { font-size: 2rem; text-align: center; cursor: grab; padding: 5px; background: #f8f9fa; border-radius: 8px; transition: transform 0.2s; user-select: none; }
         .sticker-item:hover { transform: scale(1.1); background: #e9ecef; }
-        
-        /* Nút gửi giống Google Form */
-        #btn-submit {
-            background: #1a73e8; color: white; border: none; padding: 12px;
-            font-size: 16px; font-weight: bold; border-radius: 4px; cursor: pointer;
-            transition: background 0.2s; margin-top: auto;
-        }
-        #btn-submit:hover { background: #1557b0; }
-        #btn-submit:disabled { background: #ccc; cursor: not-allowed; }
+        .instructions { font-size: 0.85rem; color: #666; line-height: 1.4; }
 
-        #notebook-container { flex: 1; padding: 40px; overflow: auto; display: flex; justify-content: center; align-items: center; }
+        /* KHU VỰC CHÍNH - BACKGROUND MẶT BÀN GỖ (image_11.png) */
+        #notebook-container {
+            flex: 1; padding: 0; overflow: auto; display: flex; justify-content: center; align-items: center;
+            background-image: url('image_11.png'); /* SỬ DỤNG ẢNH MẶT BÀN LÀM NỀN */
+            background-size: cover; background-position: center;
+        }
+
+        /* KHU VỰC QUYỂN SỔ - BACKGROUND QUYỂN SỔ XOẮN (image_12.png) */
         #notebook {
-            width: 850px; height: 550px; background-color: #fcfaf2;
-            background-image: linear-gradient(#e8e6dd 1px, transparent 1px); background-size: 100% 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15); border-radius: 4px; position: relative; cursor: crosshair; border-left: 15px solid #bdc3c7;
+            width: 850px; height: 550px;
+            background-image: url('image_12.png'); /* SỬ DỤNG ẢNH QUYỂN SỔ LÀM NỀN TRONG KHUNG */
+            background-size: 100% 100%; /* Đảm bảo ảnh quyển sổ vừa vặn khung */
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3); border-radius: 4px;
+            position: relative; cursor: crosshair;
+            /* Xóa hiệu ứng dòng kẻ CSS cũ */
+            /* border-left: 15px solid #bdc3c7; */ /* Xóa gáy sổ CSS cũ */
         }
 
-        .placed-item { position: absolute; transform: translate(-50%, -50%); cursor: move; user-select: none; }
-        .placed-text { background: transparent; border: none; font-size: 16px; color: #2c3e50; font-weight: 500; padding: 5px; outline: none; min-width: 50px; }
+        /* Các phần tử được thả vào sổ (text/sticker) - Giữ nguyên như cũ */
+        .placed-item { position: absolute; transform: translate(-50%, -50%); animation: popIn 0.2s ease-out; cursor: move; user-select: none; }
+        @keyframes popIn { 0% { transform: translate(-50%, -50%) scale(0); } 100% { transform: translate(-50%, -50%) scale(1); } }
+        .placed-text { background: transparent; border: none; font-size: 16px; color: #2c3e50; font-weight: 500; padding: 5px; outline: none; min-width: 50px; max-width: 200px; word-wrap: break-word; }
         .placed-text:focus { background: rgba(241, 196, 15, 0.2); border-radius: 4px; }
         .placed-sticker { font-size: 3rem; }
         .delete-btn { position: absolute; top: -10px; right: -10px; background: #ff7675; color: white; border: none; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; cursor: pointer; display: none; align-items: center; justify-content: center; }
@@ -47,159 +49,40 @@
     </style>
 </head>
 <body>
-
     <div id="sidebar">
-        <div class="form-group">
-            <h3>TÊN CỦA BRO</h3>
-            <input type="text" id="user-name" placeholder="Nhập tên của bạn...">
-        </div>
-
-        <h3>STIKER</h3>
+        <h3>STIKER CỦA BRO</h3>
         <div class="sticker-box">
             <div class="sticker-item" draggable="true" data-sticker="🔥">🔥</div>
             <div class="sticker-item" draggable="true" data-sticker="✨">✨</div>
             <div class="sticker-item" draggable="true" data-sticker="❤️">❤️</div>
             <div class="sticker-item" draggable="true" data-sticker="👑">👑</div>
-            <div class="sticker-item" draggable="true" data-sticker="🎈">🎈</div>
-            <div class="sticker-item" draggable="true" data-sticker="🌸">🌸</div>
+            <div class="sticker-item" draggable="true" data-sticker="🚀">🚀</div>
+            <div class="sticker-item" draggable="true" data-sticker="🐧">🐧</div>
         </div>
-
-        <button id="btn-submit">GỬI LƯU BÚT 🚀</button>
+        <h3>HƯỚNG DẪN</h3>
+        <div class="instructions">
+            <p>1. <b>Viết chữ:</b> Click đúp (Double click) vào vị trí bất kỳ trên sổ để viết lời chúc.</p><br>
+            <p>2. <b>Dán Sticker:</b> Kéo sticker từ menu bên trái và thả vào vị trí bất kỳ trên sổ.</p><br>
+            <p>3. <b>Xóa:</b> Di chuột vào chữ/sticker rồi bấm nút <b>x</b> màu đỏ.</p>
+        </div>
     </div>
 
     <div id="notebook-container">
-        <div id="notebook"></div>
+        <div id="notebook">
+            </div>
     </div>
 
     <script>
         const notebook = document.getElementById('notebook');
         const stickers = document.querySelectorAll('.sticker-item');
-        const btnSubmit = document.getElementById('btn-submit');
         let draggedStickerContent = null;
-
-        // 1. CLICK ĐỂ VIẾT CHỮ
-        notebook.addEventListener('dblclick', function(e) {
-            if(e.target !== notebook) return;
-            const rect = notebook.getBoundingClientRect();
-            createTextArea(e.clientX - rect.left, e.clientY - rect.top, "");
-        });
-
-        function createTextArea(x, y, textValue = "") {
-            const item = document.createElement('div');
-            item.className = 'placed-item';
-            item.setAttribute('data-type', 'text');
-            item.style.left = `${x}px`;
-            item.style.top = `${y}px`;
-
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.className = 'placed-text';
-            input.placeholder = 'Nhập chữ...';
-            input.value = textValue;
-            
-            const delBtn = document.createElement('button');
-            delBtn.className = 'delete-btn';
-            delBtn.innerText = 'x';
-            delBtn.onclick = () => item.remove();
-
-            item.appendChild(input);
-            item.appendChild(delBtn);
-            notebook.appendChild(item);
-            if(!textValue) input.focus();
-
-            input.addEventListener('blur', () => { if(input.value.trim() === "") item.remove(); });
-            makeElementDraggable(item);
-        }
-
-        // 2. KÉO THẢ STICKER
-        stickers.forEach(st => st.addEventListener('dragstart', function() { draggedStickerContent = this.getAttribute('data-sticker'); }));
-        notebook.addEventListener('dragover', (e) => e.preventDefault());
-        notebook.addEventListener('drop', function(e) {
-            e.preventDefault();
-            if (!draggedStickerContent) return;
-            const rect = notebook.getBoundingClientRect();
-            createSticker(e.clientX - rect.left, e.clientY - rect.top, draggedStickerContent);
-            draggedStickerContent = null;
-        });
-
-        function createSticker(x, y, content) {
-            const item = document.createElement('div');
-            item.className = 'placed-item placed-sticker';
-            item.setAttribute('data-type', 'sticker');
-            item.setAttribute('data-val', content);
-            item.style.left = `${x}px`;
-            item.style.top = `${y}px`;
-            item.innerText = content;
-
-            const delBtn = document.createElement('button');
-            delBtn.className = 'delete-btn';
-            delBtn.innerText = 'x';
-            delBtn.onclick = () => item.remove();
-
-            item.appendChild(delBtn);
-            notebook.appendChild(item);
-            makeElementDraggable(item);
-        }
-
-        function makeElementDraggable(elmnt) {
-            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-            elmnt.onmousedown = (e) => {
-                if (e.target.className === 'delete-btn' || e.target.tagName === 'INPUT') return;
-                e.preventDefault(); pos3 = e.clientX; pos4 = e.clientY;
-                document.onmouseup = () => { document.onmouseup = null; document.onmousemove = null; };
-                document.onmousemove = (ev) => {
-                    ev.preventDefault(); pos1 = pos3 - ev.clientX; pos2 = pos4 - ev.clientY;
-                    pos3 = ev.clientX; pos4 = ev.clientY;
-                    elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
-                    elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
-                };
-            };
-        }
-
-        // --- 3. TÍNH NĂNG "GỬI FORM" - ĐÓNG GÓI DỮ LIỆU ---
-        btnSubmit.addEventListener('click', function() {
-            const name = document.getElementById('user-name').value.trim();
-            if(!name) { alert("Bro nhập tên trước khi gửi nhé!"); return; }
-
-            const items = notebook.querySelectorAll('.placed-item');
-            if(items.length === 0) { alert("Sổ còn trống trơn, viết gì đi bro!"); return; }
-
-            // Thu thập toàn bộ vị trí các vật phẩm trên sổ
-            let canvasData = [];
-            items.forEach(item => {
-                let type = item.getAttribute('data-type');
-                let x = item.style.left;
-                let y = item.style.top;
-                let val = type === 'text' ? item.querySelector('input').value : item.getAttribute('data-val');
-                
-                canvasData.push({ type, x, y, val });
-            });
-
-            btnSubmit.innerText = "Đang gửi...";
-            btnSubmit.disabled = true;
-
-            // ĐÚT VÀO HÒM THƯ (Gửi lên Google Sheet)
-            const scriptUrl = 'https://script.google.com/macros/s/AKfycbwA1xSF50puLXA5Vj5N31Lt6Ww8h_X7n8v45hFcQNZl-QPABSO5dGV2Hz9l2kfNGGm1xA/exec';
-
-            fetch(scriptUrl, {
-                method: 'POST',
-                mode: 'no-cors', // Để tránh lỗi bảo mật cross-origin
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: name, canvasData: JSON.stringify(canvasData) })
-            })
-            .then(() => {
-                alert("Gửi lưu bút thành công! Cảm ơn bro!");
-                notebook.innerHTML = ""; // Xóa sạch để người tiếp theo dùng
-                document.getElementById('user-name').value = "";
-                btnSubmit.innerText = "GỬI LƯU BÚT 🚀";
-                btnSubmit.disabled = false;
-            })
-            .catch(err => {
-                alert("Có lỗi rồi bro ơi!");
-                btnSubmit.innerText = "GỬI LƯU BÚT 🚀";
-                btnSubmit.disabled = false;
-            });
-        });
+        notebook.addEventListener('dblclick', function(e) { if(e.target !== notebook) return; const rect = notebook.getBoundingClientRect(); createTextArea(e.clientX - rect.left, e.clientY - rect.top, ""); });
+        function createTextArea(x, y, textValue = "") { const item = document.createElement('div'); item.className = 'placed-item'; item.style.left = `${x}px`; item.style.top = `${y}px`; const input = document.createElement('input'); input.type = 'text'; input.className = 'placed-text'; input.placeholder = 'Nhập chữ...'; input.value = textValue; const delBtn = document.createElement('button'); delBtn.className = 'delete-btn'; delBtn.innerText = 'x'; delBtn.onclick = () => item.remove(); item.appendChild(input); item.appendChild(delBtn); notebook.appendChild(item); if(!textValue) input.focus(); input.addEventListener('blur', function() { if(input.value.trim() === "") item.remove(); }); input.addEventListener('keypress', function(e) { if(e.key === 'Enter') input.blur(); }); makeElementDraggable(item); }
+        stickers.forEach(sticker => { sticker.addEventListener('dragstart', function(e) { draggedStickerContent = this.getAttribute('data-sticker'); }); });
+        notebook.addEventListener('dragover', function(e) { e.preventDefault(); });
+        notebook.addEventListener('drop', function(e) { e.preventDefault(); if (!draggedStickerContent) return; const rect = notebook.getBoundingClientRect(); createSticker(e.clientX - rect.left, e.clientY - rect.top, draggedStickerContent); draggedStickerContent = null; });
+        function createSticker(x, y, content) { const item = document.createElement('div'); item.className = 'placed-item placed-sticker'; item.style.left = `${x}px`; item.style.top = `${y}px`; item.innerText = content; const delBtn = document.createElement('button'); delBtn.className = 'delete-btn'; delBtn.innerText = 'x'; delBtn.onclick = () => item.remove(); item.appendChild(delBtn); notebook.appendChild(item); makeElementDraggable(item); }
+        function makeElementDraggable(elmnt) { let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0; elmnt.onmousedown = dragMouseDown; function dragMouseDown(e) { if (e.target.className === 'delete-btn' || e.target.tagName === 'INPUT') return; e.preventDefault(); pos3 = e.clientX; pos4 = e.clientY; document.onmouseup = closeDragElement; document.onmousemove = elementDrag; } function elementDrag(e) { e.preventDefault(); pos1 = pos3 - e.clientX; pos2 = pos4 - e.clientY; pos3 = e.clientX; pos4 = e.clientY; elmnt.style.top = (elmnt.offsetTop - pos2) + "px"; elmnt.style.left = (elmnt.offsetLeft - pos1) + "px"; } function closeDragElement() { document.onmouseup = null; document.onmousemove = null; } }
     </script>
 </body>
 </html>
