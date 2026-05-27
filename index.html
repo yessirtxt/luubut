@@ -4,85 +4,600 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lưu Bút Góc Bàn Chill</title>
+    <!-- Thêm các Font chữ viết tay và cổ điển cực nghệ từ Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Just+Another+Hand&family=Patrick+Hand&family=Playpen+Sans:wght@500&family=Special+Elite&display=swap" rel="stylesheet">
+    
     <style>
-        /* CSS Reset cơ bản */
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background: #f0f2f5; display: flex; height: 100vh; overflow: hidden; }
+        /* --- CSS Reset & Base --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            background: #2f3640; 
+            display: flex; 
+            height: 100vh; 
+            overflow: hidden; 
+            font-family: 'Playpen Sans', cursive, sans-serif;
+        }
 
-        /* THANH CÔNG CỤ (SIDEBAR) - Giữ nguyên như cũ */
+        /* --- THANH CÔNG CỤ BÊN TRÁI (STYLE SCRAPBOOK) --- */
         #sidebar {
-            width: 250px; background: #ffffff; box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-            padding: 20px; display: flex; flex-direction: column; gap: 20px; z-index: 10;
+            width: 320px; 
+            background: #ffffff; 
+            box-shadow: 4px 0 15px rgba(0,0,0,0.15);
+            padding: 20px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 15px; 
+            z-index: 10;
+            overflow-y: auto;
+            border-right: 3px dashed #bdc3c7;
         }
-        #sidebar h3 { color: #333; font-size: 1.1rem; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        .sticker-box { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        .sticker-item { font-size: 2rem; text-align: center; cursor: grab; padding: 5px; background: #f8f9fa; border-radius: 8px; transition: transform 0.2s; user-select: none; }
-        .sticker-item:hover { transform: scale(1.1); background: #e9ecef; }
-        .instructions { font-size: 0.85rem; color: #666; line-height: 1.4; }
 
-        /* KHU VỰC CHÍNH - BACKGROUND MẶT BÀN GỖ (image_11.png) */
+        #sidebar h3 { 
+            color: #2c3e50; 
+            font-size: 1.1rem; 
+            border-bottom: 2px dashed #6c5ce7; 
+            padding-bottom: 5px;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Tên của Bro */
+        .form-group { display: flex; flex-direction: column; gap: 5px; }
+        .form-group input { 
+            padding: 10px; 
+            border: 2px solid #dfe6e9; 
+            border-radius: 8px; 
+            font-size: 14px; 
+            outline: none;
+            transition: 0.2s;
+        }
+        .form-group input:focus { border-color: #6c5ce7; }
+
+        /* Bảng điều khiển Viết chữ (Text Editor) */
+        .editor-panel {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            border: 1px solid #e2e8f0;
+        }
+        .editor-row { display: flex; gap: 8px; align-items: center; justify-content: space-between; }
+        .editor-select {
+            padding: 6px;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            font-size: 13px;
+            outline: none;
+            flex: 1;
+        }
+        .editor-input-color {
+            width: 40px;
+            height: 30px;
+            border: none;
+            cursor: pointer;
+            background: none;
+        }
+        .editor-btn {
+            background: #6c5ce7;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 13px;
+            width: 100%;
+            transition: 0.2s;
+        }
+        .editor-btn:hover { background: #5b4cc4; }
+
+        /* Hộp Sticker chia Tab như TikTok */
+        .sticker-tabs {
+            display: flex;
+            gap: 5px;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 5px;
+        }
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 5px 8px;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #7f8c8d;
+            border-radius: 4px;
+        }
+        .tab-btn.active {
+            background: #6c5ce7;
+            color: white;
+        }
+        .sticker-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            max-height: 150px;
+            overflow-y: auto;
+            padding: 5px;
+            background: #f1f2f6;
+            border-radius: 8px;
+        }
+        .sticker-item {
+            font-size: 2.2rem;
+            text-align: center;
+            cursor: grab;
+            transition: transform 0.2s;
+            user-select: none;
+        }
+        .sticker-item:hover { transform: scale(1.2) rotate(5deg); }
+
+        /* Nút gửi */
+        #btn-submit {
+            background: #10ac84; color: white; border: none; padding: 12px;
+            font-size: 15px; font-weight: bold; border-radius: 8px; cursor: pointer;
+            transition: 0.2s; margin-top: auto;
+            box-shadow: 0 4px 6px rgba(16, 172, 132, 0.2);
+        }
+        #btn-submit:hover { background: #0f9b75; transform: translateY(-2px); }
+
+        /* --- KHU VỰC PHÒNG CHILL (MẶT BÀN GỖ) --- */
         #notebook-container {
-            flex: 1; padding: 0; overflow: auto; display: flex; justify-content: center; align-items: center;
-            background-image: url('image_11.png'); /* SỬ DỤNG ẢNH MẶT BÀN LÀM NỀN */
-            background-size: cover; background-position: center;
+            flex: 1; 
+            padding: 20px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+            /* Dùng ảnh mặt bàn gỗ thật góc nhìn từ trên xuống cực nét */
+            background-image: linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.1)), url('https://images.unsplash.com/photo-1541185933-ef5d8ed016c2?q=80&w=1920&auto=format&fit=crop');
+            background-size: cover; 
+            background-position: center;
+            position: relative;
         }
 
-        /* KHU VỰC QUYỂN SỔ - BACKGROUND QUYỂN SỔ XOẮN (image_12.png) */
+        /* Thêm hiệu ứng kính râm/ly cà phê trang trí góc phòng (Pure CSS) */
+        .decor-coffee {
+            position: absolute; top: 40px; right: 60px;
+            width: 100px; height: 100px;
+            background: radial-gradient(#57606f, #2f3542);
+            border-radius: 50%;
+            border: 6px solid #f1f2f6;
+            box-shadow: 5px 10px 20px rgba(0,0,0,0.3);
+        }
+
+        /* --- QUYỂN SỔ TỰ DỰNG SIÊU THỰC (HTML/CSS) --- */
         #notebook {
-            width: 850px; height: 550px;
-            background-image: url('image_12.png'); /* SỬ DỤNG ẢNH QUYỂN SỔ LÀM NỀN TRONG KHUNG */
-            background-size: 100% 100%; /* Đảm bảo ảnh quyển sổ vừa vặn khung */
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3); border-radius: 4px;
-            position: relative; cursor: crosshair;
-            /* Xóa hiệu ứng dòng kẻ CSS cũ */
-            /* border-left: 15px solid #bdc3c7; */ /* Xóa gáy sổ CSS cũ */
+            width: 860px; 
+            height: 560px;
+            background: #fdfbf7;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4); 
+            border-radius: 12px;
+            position: relative; 
+            cursor: crosshair;
+            display: flex;
+            border: 4px solid #333;
         }
 
-        /* Các phần tử được thả vào sổ (text/sticker) - Giữ nguyên như cũ */
-        .placed-item { position: absolute; transform: translate(-50%, -50%); animation: popIn 0.2s ease-out; cursor: move; user-select: none; }
-        @keyframes popIn { 0% { transform: translate(-50%, -50%) scale(0); } 100% { transform: translate(-50%, -50%) scale(1); } }
-        .placed-text { background: transparent; border: none; font-size: 16px; color: #2c3e50; font-weight: 500; padding: 5px; outline: none; min-width: 50px; max-width: 200px; word-wrap: break-word; }
-        .placed-text:focus { background: rgba(241, 196, 15, 0.2); border-radius: 4px; }
-        .placed-sticker { font-size: 3rem; }
-        .delete-btn { position: absolute; top: -10px; right: -10px; background: #ff7675; color: white; border: none; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; cursor: pointer; display: none; align-items: center; justify-content: center; }
+        /* Đường gáy lò xo ở giữa sổ */
+        .notebook-spine {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            width: 20px;
+            height: 100%;
+            transform: translateX(-50%);
+            background: linear-gradient(to right, #ccc, #fff, #ccc);
+            z-index: 5;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px 0;
+        }
+        /* Từng khuyên lò xo sắt */
+        .notebook-ring {
+            width: 28px;
+            height: 12px;
+            background: linear-gradient(135deg, #f1f2f6, #747d8c);
+            border-radius: 6px;
+            border: 1px solid #57606f;
+            box-shadow: 2px 3px 5px rgba(0,0,0,0.3);
+            margin-left: -4px;
+        }
+
+        /* Hai trang giấy Trái & Phải */
+        .notebook-page {
+            flex: 1;
+            height: 100%;
+            position: relative;
+            padding: 30px 40px;
+            /* Tạo hiệu ứng dòng kẻ tập học sinh */
+            background-image: linear-gradient(#e1e8ed 1px, transparent 1px);
+            background-size: 100% 28px;
+            background-position: 0 10px;
+        }
+        /* Lề đỏ trang giấy */
+        .notebook-page.left {
+            border-right: 1px solid #bdc3c7;
+            background-color: #fdfbf7;
+            border-radius: 8px 0 0 8px;
+        }
+        .notebook-page.left::before {
+            content: '';
+            position: absolute;
+            right: 45px; top: 0; width: 2px; height: 100%;
+            background: rgba(255, 107, 107, 0.5);
+        }
+        .notebook-page.right {
+            border-left: 1px solid #bdc3c7;
+            background-color: #fdfbf7;
+            border-radius: 0 8px 8px 0;
+        }
+        .notebook-page.right::before {
+            content: '';
+            position: absolute;
+            left: 45px; top: 0; width: 2px; height: 100%;
+            background: rgba(255, 107, 107, 0.5);
+        }
+
+        /* --- ĐỒ VẬT THẢ VÀO SỔ --- */
+        .placed-item { 
+            position: absolute; 
+            transform: translate(-50%, -50%); 
+            cursor: move; 
+            user-select: none;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Chữ viết tay */
+        .placed-text {
+            border: none;
+            background: transparent;
+            outline: none;
+            padding: 5px;
+            white-space: pre-wrap;
+            resize: none;
+            overflow: hidden;
+            text-align: center;
+            min-width: 100px;
+            border: 1px dashed transparent;
+        }
+        .placed-text:focus {
+            border-color: #6c5ce7;
+            background: rgba(108, 92, 231, 0.05);
+            border-radius: 4px;
+        }
+
+        /* Ảnh dán / Sticker */
+        .placed-sticker {
+            font-size: 3.5rem;
+            filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.15));
+            transition: transform 0.2s;
+        }
+
+        /* Nút xóa */
+        .delete-btn { 
+            position: absolute; top: -12px; right: -12px; 
+            background: #ff7675; color: white; border: none; 
+            border-radius: 50%; width: 20px; height: 20px; 
+            font-size: 11px; cursor: pointer; display: none; 
+            align-items: center; justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            font-weight: bold;
+            z-index: 10;
+        }
         .placed-item:hover .delete-btn { display: flex; }
     </style>
 </head>
 <body>
+
+    <!-- SIDEBAR QUẢN LÝ (BÊN TRÁI) -->
     <div id="sidebar">
-        <h3>STIKER CỦA BRO</h3>
-        <div class="sticker-box">
-            <div class="sticker-item" draggable="true" data-sticker="🔥">🔥</div>
-            <div class="sticker-item" draggable="true" data-sticker="✨">✨</div>
-            <div class="sticker-item" draggable="true" data-sticker="❤️">❤️</div>
-            <div class="sticker-item" draggable="true" data-sticker="👑">👑</div>
-            <div class="sticker-item" draggable="true" data-sticker="🚀">🚀</div>
-            <div class="sticker-item" draggable="true" data-sticker="🐧">🐧</div>
+        <div class="form-group">
+            <h3>TÊN CỦA BRO ✍️</h3>
+            <input type="text" id="user-name" placeholder="Ví dụ: Thiên Bình Th10...">
         </div>
-        <h3>HƯỚNG DẪN</h3>
-        <div class="instructions">
-            <p>1. <b>Viết chữ:</b> Click đúp (Double click) vào vị trí bất kỳ trên sổ để viết lời chúc.</p><br>
-            <p>2. <b>Dán Sticker:</b> Kéo sticker từ menu bên trái và thả vào vị trí bất kỳ trên sổ.</p><br>
-            <p>3. <b>Xóa:</b> Di chuột vào chữ/sticker rồi bấm nút <b>x</b> màu đỏ.</p>
+
+        <h3>VIẾT GÌ ĐÓ VÀO SỔ NÈ 📋</h3>
+        <div class="editor-panel">
+            <textarea id="text-input" placeholder="Gõ lời chúc vào đây..." style="width:100%; height:70px; padding:8px; border-radius:6px; border:1px solid #cbd5e1; font-size:13px; outline:none; resize:none;"></textarea>
+            
+            <div class="editor-row">
+                <!-- Chọn Font chữ viết tay/máy tính -->
+                <select id="font-select" class="editor-select">
+                    <option value="'Patrick Hand', cursive">Chữ Viết Tay</option>
+                    <option value="'Dancing Script', cursive">Nghệ Thuật</option>
+                    <option value="'Special Elite', monospace">Máy Đánh Chữ</option>
+                    <option value="'Just Another Hand', cursive">Bay Bướm</option>
+                </select>
+
+                <!-- Color Picker -->
+                <input type="color" id="color-select" class="editor-input-color" value="#2c3e50">
+            </div>
+
+            <div class="editor-row">
+                <!-- Chỉnh Size Chữ -->
+                <select id="size-select" class="editor-select">
+                    <option value="16px">Cỡ Nhỏ</option>
+                    <option value="22px" selected>Cỡ Vừa</option>
+                    <option value="32px">Cỡ To</option>
+                </select>
+            </div>
+
+            <button id="btn-add-text" class="editor-btn">+ Thả chữ vào sổ</button>
         </div>
+
+        <h3>HỘP STICKER 🎁</h3>
+        <div class="sticker-tabs">
+            <button class="tab-btn active" onclick="switchTab('scrapbook')">SCRAPBOOK</button>
+            <button class="tab-btn" onclick="switchTab('thucung')">PETS</button>
+            <button class="tab-btn" onclick="switchTab('gamedo')">FUNNY</button>
+        </div>
+        
+        <!-- Hộp chứa Sticker -->
+        <div class="sticker-grid" id="sticker-container">
+            <!-- Sẽ render tự động theo tab bằng JS -->
+        </div>
+
+        <button id="btn-submit">GỬI LƯU BÚT 🚀</button>
     </div>
 
+    <!-- KHU VỰC PHÒNG CHILL CHỨA QUYỂN SỔ -->
     <div id="notebook-container">
+        <!-- Tách cà phê chill decor góc bàn -->
+        <div class="decor-coffee"></div>
+
+        <!-- Quyển sổ gáy lò xo xoắn ốc -->
         <div id="notebook">
+            <!-- Sống lò xo ở giữa quyển sổ -->
+            <div class="notebook-spine">
+                <div class="notebook-ring"></div>
+                <div class="notebook-ring"></div>
+                <div class="notebook-ring"></div>
+                <div class="notebook-ring"></div>
+                <div class="notebook-ring"></div>
+                <div class="notebook-ring"></div>
+                <div class="notebook-ring"></div>
+                <div class="notebook-ring"></div>
+                <div class="notebook-ring"></div>
+                <div class="notebook-ring"></div>
             </div>
+
+            <!-- Trang Trái -->
+            <div class="notebook-page left" id="page-left"></div>
+
+            <!-- Trang Phải -->
+            <div class="notebook-page right" id="page-right"></div>
+        </div>
     </div>
 
     <script>
         const notebook = document.getElementById('notebook');
-        const stickers = document.querySelectorAll('.sticker-item');
+        const pageLeft = document.getElementById('page-left');
+        const pageRight = document.getElementById('page-right');
+        const stickerContainer = document.getElementById('sticker-container');
+        const btnAddText = document.getElementById('btn-add-text');
+        const btnSubmit = document.getElementById('btn-submit');
+        
         let draggedStickerContent = null;
-        notebook.addEventListener('dblclick', function(e) { if(e.target !== notebook) return; const rect = notebook.getBoundingClientRect(); createTextArea(e.clientX - rect.left, e.clientY - rect.top, ""); });
-        function createTextArea(x, y, textValue = "") { const item = document.createElement('div'); item.className = 'placed-item'; item.style.left = `${x}px`; item.style.top = `${y}px`; const input = document.createElement('input'); input.type = 'text'; input.className = 'placed-text'; input.placeholder = 'Nhập chữ...'; input.value = textValue; const delBtn = document.createElement('button'); delBtn.className = 'delete-btn'; delBtn.innerText = 'x'; delBtn.onclick = () => item.remove(); item.appendChild(input); item.appendChild(delBtn); notebook.appendChild(item); if(!textValue) input.focus(); input.addEventListener('blur', function() { if(input.value.trim() === "") item.remove(); }); input.addEventListener('keypress', function(e) { if(e.key === 'Enter') input.blur(); }); makeElementDraggable(item); }
-        stickers.forEach(sticker => { sticker.addEventListener('dragstart', function(e) { draggedStickerContent = this.getAttribute('data-sticker'); }); });
-        notebook.addEventListener('dragover', function(e) { e.preventDefault(); });
-        notebook.addEventListener('drop', function(e) { e.preventDefault(); if (!draggedStickerContent) return; const rect = notebook.getBoundingClientRect(); createSticker(e.clientX - rect.left, e.clientY - rect.top, draggedStickerContent); draggedStickerContent = null; });
-        function createSticker(x, y, content) { const item = document.createElement('div'); item.className = 'placed-item placed-sticker'; item.style.left = `${x}px`; item.style.top = `${y}px`; item.innerText = content; const delBtn = document.createElement('button'); delBtn.className = 'delete-btn'; delBtn.innerText = 'x'; delBtn.onclick = () => item.remove(); item.appendChild(delBtn); notebook.appendChild(item); makeElementDraggable(item); }
-        function makeElementDraggable(elmnt) { let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0; elmnt.onmousedown = dragMouseDown; function dragMouseDown(e) { if (e.target.className === 'delete-btn' || e.target.tagName === 'INPUT') return; e.preventDefault(); pos3 = e.clientX; pos4 = e.clientY; document.onmouseup = closeDragElement; document.onmousemove = elementDrag; } function elementDrag(e) { e.preventDefault(); pos1 = pos3 - e.clientX; pos2 = pos4 - e.clientY; pos3 = e.clientX; pos4 = e.clientY; elmnt.style.top = (elmnt.offsetTop - pos2) + "px"; elmnt.style.left = (elmnt.offsetLeft - pos1) + "px"; } function closeDragElement() { document.onmouseup = null; document.onmousemove = null; } }
+
+        // --- 1. KHO STICKER CHIA TAB ---
+        const STICKER_DATA = {
+            scrapbook: ["🌸", "🎀", "⭐", "🍀", "🎈", "🧸", "🎨", "📌", "📸"],
+            thucung: ["🐶", "🐱", "🐰", "🦊", "🐻", "🐼", "🦁", "🐸", "🐧"],
+            gamedo: ["🔥", "✨", "❤️", "👑", "🚀", "🎸", "🛸", "🍕", "🧁"]
+        };
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if(btn.innerText.toLowerCase().includes(tabName.substring(0,3))) {
+                    btn.classList.add('active');
+                }
+            });
+            renderStickers(tabName);
+        }
+
+        function renderStickers(category) {
+            stickerContainer.innerHTML = "";
+            STICKER_DATA[category].forEach(emoji => {
+                const item = document.createElement('div');
+                item.className = 'sticker-item';
+                item.draggable = true;
+                item.innerText = emoji;
+                item.setAttribute('data-sticker', emoji);
+                
+                item.addEventListener('dragstart', function() {
+                    draggedStickerContent = this.getAttribute('data-sticker');
+                });
+                stickerContainer.appendChild(item);
+            });
+        }
+        // Khởi tạo render sticker lần đầu
+        renderStickers('scrapbook');
+
+        // --- 2. TẠO CHỮ TỪ BẢNG ĐIỀU KHIỂN ---
+        btnAddText.addEventListener('click', function() {
+            const textVal = document.getElementById('text-input').value.trim();
+            if(!textVal) { alert("Bro nhập lời nhắn trước nhé!"); return; }
+
+            const font = document.getElementById('font-select').value;
+            const color = document.getElementById('color-select').value;
+            const size = document.getElementById('size-select').value;
+
+            // Thả mặc định vào giữa trang phải
+            createPlacedText(430, 280, textVal, font, color, size);
+            document.getElementById('text-input').value = ""; // Reset box
+        });
+
+        function createPlacedText(x, y, textVal, font, color, size) {
+            const item = document.createElement('div');
+            item.className = 'placed-item';
+            item.setAttribute('data-type', 'text');
+            item.style.left = `${x}px`;
+            item.style.top = `${y}px`;
+
+            const txt = document.createElement('div');
+            txt.className = 'placed-text';
+            txt.innerText = textVal;
+            txt.style.fontFamily = font;
+            txt.style.color = color;
+            txt.style.fontSize = size;
+            txt.setAttribute('contenteditable', 'true'); // Cho sửa trực tiếp trên sổ luôn!
+            
+            // Lưu trữ thông số ẩn để lúc sau đóng gói gửi đi
+            item.setAttribute('data-font', font);
+            item.setAttribute('data-color', color);
+            item.setAttribute('data-size', size);
+
+            const delBtn = document.createElement('button');
+            delBtn.className = 'delete-btn';
+            delBtn.innerText = 'x';
+            delBtn.onclick = () => item.remove();
+
+            item.appendChild(txt);
+            item.appendChild(delBtn);
+            notebook.appendChild(item);
+
+            makeElementDraggable(item);
+        }
+
+        // --- 3. CLICK ĐÚP BẤT KỲ ĐÂU ĐỂ GÕ NHANH ---
+        notebook.addEventListener('dblclick', function(e) {
+            if(e.target.id !== 'page-left' && e.target.id !== 'page-right') return;
+            const rect = notebook.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            const font = document.getElementById('font-select').value;
+            const color = document.getElementById('color-select').value;
+            const size = document.getElementById('size-select').value;
+
+            createPlacedText(x, y, "Gõ chữ ở đây...", font, color, size);
+        });
+
+        // --- 4. KÉO THẢ STICKER ---
+        notebook.addEventListener('dragover', (e) => e.preventDefault());
+        notebook.addEventListener('drop', function(e) {
+            e.preventDefault();
+            if (!draggedStickerContent) return;
+            
+            const rect = notebook.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            createSticker(x, y, draggedStickerContent);
+            draggedStickerContent = null;
+        });
+
+        function createSticker(x, y, content) {
+            const item = document.createElement('div');
+            item.className = 'placed-item';
+            item.setAttribute('data-type', 'sticker');
+            item.setAttribute('data-val', content);
+            item.style.left = `${x}px`;
+            item.style.top = `${y}px`;
+
+            const sticker = document.createElement('div');
+            sticker.className = 'placed-sticker';
+            sticker.innerText = content;
+
+            const delBtn = document.createElement('button');
+            delBtn.className = 'delete-btn';
+            delBtn.innerText = 'x';
+            delBtn.onclick = () => item.remove();
+
+            item.appendChild(sticker);
+            item.appendChild(delBtn);
+            notebook.appendChild(item);
+
+            makeElementDraggable(item);
+        }
+
+        // --- 5. BỘ KÉO THẢ DI CHUYỂN ĐỒ ---
+        function makeElementDraggable(elmnt) {
+            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            elmnt.onmousedown = (e) => {
+                if (e.target.className === 'delete-btn' || e.target.getAttribute('contenteditable') === 'true') return;
+                e.preventDefault(); 
+                pos3 = e.clientX; 
+                pos4 = e.clientY;
+                document.onmouseup = () => { document.onmouseup = null; document.onmousemove = null; };
+                document.onmousemove = (ev) => {
+                    ev.preventDefault(); 
+                    pos1 = pos3 - ev.clientX; 
+                    pos2 = pos4 - ev.clientY;
+                    pos3 = ev.clientX; 
+                    pos4 = ev.clientY;
+                    elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+                    elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+                };
+            };
+        }
+
+        // --- 6. GỬI LƯU BÚT ĐI (GOOGLE APPS SCRIPT KẾT NỐI DATABASE) ---
+        btnSubmit.addEventListener('click', function() {
+            const name = document.getElementById('user-name').value.trim();
+            if(!name) { alert("Bro nhập tên của mình trước khi gửi nha!"); return; }
+
+            const items = notebook.querySelectorAll('.placed-item');
+            if(items.length === 0) { alert("Sổ còn trống trơn, viết gì đó đã bro!"); return; }
+
+            let canvasData = [];
+            items.forEach(item => {
+                let type = item.getAttribute('data-type');
+                let x = item.style.left;
+                let y = item.style.top;
+                
+                let val, font = "", color = "", size = "";
+                if(type === 'text') {
+                    const textDiv = item.querySelector('.placed-text');
+                    val = textDiv.innerText;
+                    font = textDiv.style.fontFamily;
+                    color = textDiv.style.color;
+                    size = textDiv.style.fontSize;
+                } else {
+                    val = item.getAttribute('data-val');
+                }
+                
+                canvasData.push({ type, x, y, val, font, color, size });
+            });
+
+            btnSubmit.innerText = "Đang gửi...";
+            btnSubmit.disabled = true;
+
+            // DÁN LINK GOOGLE APPS SCRIPT CỦA BRO VÀO ĐÂY NHA:
+            const scriptUrl = 'https://script.google.com/macros/s/AKfycbz_XXXXXXXXX_YYYYYYYY/exec';
+
+            fetch(scriptUrl, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: name, canvasData: JSON.stringify(canvasData) })
+            })
+            .then(() => {
+                alert("Gửi lưu bút thành công! Cảm ơn bro!");
+                // Xóa các vật phẩm cũ để chuẩn bị trang mới
+                document.querySelectorAll('.placed-item').forEach(el => el.remove());
+                document.getElementById('user-name').value = "";
+                btnSubmit.innerText = "GỬI LƯU BÚT 🚀";
+                btnSubmit.disabled = false;
+            })
+            .catch(err => {
+                alert("Có lỗi rồi bro ơi!");
+                btnSubmit.innerText = "GỬI LƯU BÚT 🚀";
+                btnSubmit.disabled = false;
+            });
+        });
     </script>
 </body>
 </html>
